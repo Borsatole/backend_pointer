@@ -94,7 +94,7 @@ class FinanceiroKPIs {
      */
     private function buscarContasAPagar(string $filtroData, array $params): array {
         $sql = "SELECT COUNT(*) as quantidade, COALESCE(SUM(valor), 0) as total 
-                FROM financeiro_contas_a_pagar $filtroData";
+                FROM financeiro_contas_a_receber $filtroData";
         
         return $this->executarConsultaKPI($sql, $params);
     }
@@ -107,7 +107,7 @@ class FinanceiroKPIs {
         $filtro = "WHERE " . implode(" AND ", $whereCompleto);
         
         $sql = "SELECT COUNT(*) as quantidade, COALESCE(SUM(valor), 0) as total 
-                FROM financeiro_contas_a_pagar $filtro";
+                FROM financeiro_contas_a_receber $filtro";
         
         return $this->executarConsultaKPI($sql, $params);
     }
@@ -123,7 +123,7 @@ class FinanceiroKPIs {
         $filtro = "WHERE " . implode(" AND ", $whereCompleto);
         
         $sql = "SELECT COUNT(*) as quantidade, COALESCE(SUM(valor), 0) as total 
-                FROM financeiro_contas_a_pagar $filtro";
+                FROM financeiro_contas_a_receber $filtro";
         
         return $this->executarConsultaKPI($sql, $params);
     }
@@ -139,7 +139,7 @@ class FinanceiroKPIs {
         $filtro = "WHERE " . implode(" AND ", $whereCompleto);
         
         $sql = "SELECT COUNT(*) as quantidade, COALESCE(SUM(valor), 0) as total 
-                FROM financeiro_contas_a_pagar $filtro";
+                FROM financeiro_contas_a_receber $filtro";
         
         return $this->executarConsultaKPI($sql, $params);
     }
@@ -167,7 +167,7 @@ class FinanceiroKPIs {
             $sql = "SELECT 
                         SUM(CASE WHEN data_vencimento BETWEEN :inicio_atual AND :fim_atual THEN valor ELSE 0 END) as atual,
                         SUM(CASE WHEN data_vencimento BETWEEN :inicio_anterior AND :fim_anterior THEN valor ELSE 0 END) as anterior
-                    FROM financeiro_contas_a_pagar 
+                    FROM financeiro_contas_a_receber 
                     WHERE data_vencimento BETWEEN :inicio_anterior AND :fim_atual";
             
             $stmt = $this->pdo->prepare($sql);
@@ -244,8 +244,8 @@ class FinanceiroKPIs {
         };
         
         return [
-            "contas_a_pagar" => [
-                "titulo" => "Contas Selecionadas",
+            "pagamentos" => [
+                "titulo" => "Pagamentos Selecionados",
                 "quantidade" => $contasAPagar['quantidade'],
                 "descricao" => "{$contasAPagar['quantidade']} contas no período selecionado",
                 "valor_total" => $contasAPagar['total'],
@@ -258,8 +258,8 @@ class FinanceiroKPIs {
                 ],
                 "cor" => "orange"
             ],
-            "contas_pagas" => [
-                "titulo" => "Contas Pagas",
+            "pagamentos_recebidos" => [
+                "titulo" => "Pagamentos Recebidos",
                 "quantidade" => $contasPagas['quantidade'],
                 "descricao" => "{$contasPagas['quantidade']} contas pagas no período selecionado",
                 "valor_total" => $contasPagas['total'],
@@ -270,8 +270,8 @@ class FinanceiroKPIs {
                 ],
                 "cor" => "green"
             ],
-            "contas_pendentes" => [
-                "titulo" => "Contas Pendentes",
+            "pagamentos_pendentes" => [
+                "titulo" => "Pagamentos Pendentes",
                 "quantidade" => $contasPendentes['quantidade'],
                 "descricao" => "{$contasPendentes['quantidade']} contas pendentes no período selecionado",
                 "valor_total" => $contasPendentes['total'],
@@ -282,8 +282,8 @@ class FinanceiroKPIs {
                 ],
                 "cor" => "blue"
             ],
-            "contas_atrasadas" => [
-                "titulo" => "Contas Atrasadas",
+            "pagamentos_atrasados" => [
+                "titulo" => "Pagamentos Atrasadas",
                 "quantidade" => $contasAtrasadas['quantidade'],
                 "descricao" => "{$contasAtrasadas['quantidade']} contas atrasadas no período selecionado",
                 "valor_total" => $contasAtrasadas['total'],
