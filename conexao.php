@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'acoforte2';
+$dbname = 'pointer';
 $username = 'root';
 $password = '';
 
