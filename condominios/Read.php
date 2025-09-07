@@ -16,7 +16,7 @@ try {
     // -------------------------------
     // 1. Definição de filtros
     // -------------------------------
-    $filtrosPermitidos = ['id', 'nome', 'quantidade', 'data_minima', 'data_maxima',];
+    $filtrosPermitidos = ['id', 'nome'];
     $filtros = [];
     $parametros = [];
 
@@ -45,7 +45,6 @@ try {
     }
 
     $where = $filtros ? "WHERE " . implode(" AND ", $filtros) : "";
-    $whereVisitas = $filtros ? "WHERE " . implode(" AND ", $filtros) : "";
 
     // -------------------------------
     // 2. Buscar todos os condomínios
@@ -81,7 +80,6 @@ try {
 
     $sqlVisitas = "
         SELECT * FROM visitas
-        $whereVisitas
         WHERE id_condominio = :id_condominio
         ORDER BY id DESC
     ";

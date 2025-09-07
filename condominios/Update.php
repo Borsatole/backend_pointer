@@ -5,58 +5,68 @@ require_once dirname(__DIR__, 1) . '/middlewares/lentidao-teste-api.php';
 require_once dirname(__DIR__, 1) . '/conexao.php';
 
 
-// Método permitido
+
+// Permitir apenas PUT
 if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
     http_response_code(405);
     echo json_encode(["success" => false, "message" => "Método não permitido"]);
     exit();
 }
 
+$tabelabd = 'condominios';
+
 // Recebe os dados
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Validação simples
 $id = isset($data['id']) ? (int)$data['id'] : 0;
-$nome = trim($data['nome'] ?? '');
-$quantidade = trim($data['quantidade'] ?? '');
-$categoria = trim($data['categoria'] ?? '');
-
-
-// Validação obrigatória
-if (empty($id)) {
+if (!$id) {
     http_response_code(400);
-    echo json_encode([
-        "success" => false,
-        "message" => "ID do servidor não informado"
-    ]);
+    echo json_encode(["success" => false, "message" => "ID não informado"]);
     exit();
 }
 
+// Campos possíveis de atualizar
+$campos = ['nome', 'telefone', 'rua'];
+$setters = [];
+$params = [];
+
+foreach ($campos as $campo) {
+    if (array_key_exists($campo, $data)) {
+        if ($campo === 'data_pagamento' && $data[$campo] === "") {
+            $setters[] = "$campo = NULL"; // insere NULL direto no SQL
+        } else {
+            $setters[] = "$campo = :$campo";
+            $params[":$campo"] = $data[$campo];
+        }
+    }
+}
+
+
+// Se nenhum campo foi enviado
+if (empty($setters)) {
+    echo json_encode(["success" => false, "message" => "Nenhum campo para atualizar"]);
+    exit();
+}
+
+// Adiciona atualização de timestamp
+$setters[] = "data_atualizacao = CURRENT_TIMESTAMP";
+
+$sql = "UPDATE $tabelabd SET " . implode(", ", $setters) . " WHERE id = :id";
+$params[':id'] = $id;
+
 try {
     global $pdo;
-    $sql = "UPDATE estoque SET 
-                nome = :nome,
-                quantidade = :quantidade,
-                categoria = :categoria
-            WHERE id = :id"; // removi vírgula antes do WHERE
-
     $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':nome', $nome);
-    $stmt->bindParam(':quantidade', $quantidade);
-    $stmt->bindParam(':categoria', $categoria);
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT); // Faltava bind para o :id
+    $stmt->execute($params);
 
-    $stmt->execute();
-
-    echo json_encode([
-        "success" => true,
-        "message" => "Atualizado com sucesso"
-    ]);
+    if ($stmt->rowCount() > 0) {
+        echo json_encode(["success" => true, "message" => "Atualizado com sucesso"]);
+    } else {
+        echo json_encode(["success" => false, "message" => "Nenhum registro alterado com o ID informado"]);
+    }
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode([
-        "success" => false,
-        "message" => "Erro ao atualizar registro",
-        "error" => $e->getMessage()
-    ]);
+    echo json_encode(["success" => false, "message" => "Erro ao atualizar registro", "error" => $e->getMessage()]);
 }
+
+?>

@@ -5,7 +5,6 @@ require_once dirname(__DIR__, 2) . '/middlewares/lentidao-teste-api.php';
 require_once dirname(__DIR__, 2) . '/conexao.php';
 
 
-
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode(["success" => false, "message" => "Método não permitido"]);
@@ -20,67 +19,58 @@ try {
     // -------------------------------
     // 1. Definição de filtros
     // -------------------------------
-    $filtrosPermitidos = ['id_condominio', 'data_minima', 'data_maxima',];
+    $filtrosPermitidos = ['id_condominio', 'data_minima', 'data_maxima'];
     $filtros = [];
     $parametros = [];
 
     foreach ($filtrosPermitidos as $campo) {
-    if (isset($_GET[$campo]) && $_GET[$campo] !== '') {
-        $valor = trim($_GET[$campo]);
+        if (isset($_GET[$campo]) && $_GET[$campo] !== '') {
+            $valor = trim($_GET[$campo]);
 
-        if (in_array($campo, ['id_condominio', 'quantidade'])) {
-            if (!is_numeric($valor)) {
-                http_response_code(400);
-                echo json_encode([
-                    "success" => false,
-                    "message" => "Campo $campo deve ser numérico"
-                ]);
-                exit();
+            if ($campo === 'id_condominio') {
+                if (!is_numeric($valor)) {
+                    http_response_code(400);
+                    echo json_encode([
+                        "success" => false,
+                        "message" => "Campo $campo deve ser numérico"
+                    ]);
+                    exit();
+                }
+                $filtros[] = "$campo = :$campo";
+                $parametros[$campo] = ['valor' => (int)$valor, 'tipo' => PDO::PARAM_INT];
+            } elseif ($campo === 'data_minima') {
+                $filtros[] = "entrada >= :data_minima";
+                $parametros['data_minima'] = ['valor' => $valor . ' 00:00:00', 'tipo' => PDO::PARAM_STR];
+            } elseif ($campo === 'data_maxima') {
+                $filtros[] = "entrada <= :data_maxima";
+                $parametros['data_maxima'] = ['valor' => $valor . ' 23:59:59', 'tipo' => PDO::PARAM_STR];
             }
-            $filtros[] = $campo === 'quantidade'
-                ? "$campo <= :$campo"
-                : "$campo = :$campo";
-            $parametros[$campo] = ['valor' => (int)$valor, 'tipo' => PDO::PARAM_INT];
-        } else {
-            $filtros[] = "$campo LIKE :$campo";
-            $parametros[$campo] = ['valor' => "%$valor%", 'tipo' => PDO::PARAM_STR];
         }
     }
-}
-
 
     $where = $filtros ? "WHERE " . implode(" AND ", $filtros) : "";
 
     // -------------------------------
     // 2. Buscar tudo
     // -------------------------------
-    $sqlCondominios = "SELECT * FROM $tabelabd $where ORDER BY id ASC";
-    $stmtCondominios = $pdo->prepare($sqlCondominios);
+    $sqlVisitas = "SELECT * FROM $tabelabd $where ORDER BY id ASC";
+    $stmtVisitas = $pdo->prepare($sqlVisitas);
 
     foreach ($parametros as $campo => $dado) {
-        $stmtCondominios->bindValue(":$campo", $dado['valor'], $dado['tipo']);
+        $stmtVisitas->bindValue(":$campo", $dado['valor'], $dado['tipo']);
     }
 
-    $stmtCondominios->execute();
-    $condominios = $stmtCondominios->fetchAll(PDO::FETCH_ASSOC);
 
-    if (!$condominios) {
-        echo json_encode([
-            "success" => true,
-            "total_registros" => 0,
-            "Registros" => []
-        ], JSON_UNESCAPED_UNICODE);
-        exit();
-    }
-
+    $stmtVisitas->execute();
+    $visitas = $stmtVisitas->fetchAll(PDO::FETCH_ASSOC);
 
     // -------------------------------
-    // 5. Retorno final
+    // 3. Retorno final
     // -------------------------------
     echo json_encode([
         "success" => true,
-        "total_registros" => count($condominios),
-        "Registros" => $condominios,
+        "total_registros" => count($visitas),
+        "Registros" => $visitas,
         "filtros_aplicados" => array_keys($parametros)
     ], JSON_UNESCAPED_UNICODE);
 

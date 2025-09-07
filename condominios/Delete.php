@@ -12,6 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     exit();
 }
 
+$tabelabd = 'condominios';
+
 // Pegando ID da query string
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
@@ -27,7 +29,7 @@ if ($id <= 0) {
 
 try {
     global $pdo;
-    $sql = "DELETE FROM condominios WHERE id = :id";
+    $sql = "DELETE FROM $tabelabd WHERE id = :id";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
