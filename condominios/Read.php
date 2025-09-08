@@ -72,33 +72,24 @@ try {
     // 3. Preparar queries auxiliares
     // -------------------------------
     $sqlNotificacoes = "
-        SELECT * FROM notificacoes
-        WHERE id_condominio = :id_condominio
-        ORDER BY id DESC
-    ";
-    $stmtNotificacoes = $pdo->prepare($sqlNotificacoes);
+    SELECT COUNT(*) as notificacoes_nao_lidas
+    FROM notificacoes
+    WHERE id_condominio = :id_condominio
+      AND lida = 0
+";
+$stmtNotificacoes = $pdo->prepare($sqlNotificacoes);
 
-    $sqlVisitas = "
-        SELECT * FROM visitas
-        WHERE id_condominio = :id_condominio
-        ORDER BY id DESC
-    ";
-    $stmtVisitas = $pdo->prepare($sqlVisitas);
 
-    // -------------------------------
-    // 4. Adicionar notificações e visitas em cada condomínio
-    // -------------------------------
+    // // -------------------------------
+    // // 4. Adicionar notificações e visitas em cada condomínio
+    // // -------------------------------
     foreach ($condominios as $i => $condominio) {
-        // Notificações
-        $stmtNotificacoes->bindValue(':id_condominio', $condominio['id'], PDO::PARAM_INT);
-        $stmtNotificacoes->execute();
-        $condominios[$i]['notificacoes'] = $stmtNotificacoes->fetchAll(PDO::FETCH_ASSOC);
+    $stmtNotificacoes->bindValue(':id_condominio', $condominio['id'], PDO::PARAM_INT);
+    $stmtNotificacoes->execute();
+    $qtdNaoLidas = $stmtNotificacoes->fetchColumn(); // já pega só o número
 
-        // Visitas
-        $stmtVisitas->bindValue(':id_condominio', $condominio['id'], PDO::PARAM_INT);
-        $stmtVisitas->execute();
-        $condominios[$i]['visitas'] = $stmtVisitas->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $condominios[$i]['notificacoes'] = (int)$qtdNaoLidas; // agora vira número
+}
 
     // -------------------------------
     // 5. Retorno final
