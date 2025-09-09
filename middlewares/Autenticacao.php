@@ -5,22 +5,22 @@
 require_once(dirname(__DIR__, 1) . '/middlewares/Cors.php');
 require_once(dirname(__DIR__, 1) . '/Auth/Token/valida-jwt-interno.php');
 
-// $dadosheader = getallheaders();
+$dadosheader = getallheaders();
 
-// $token = str_replace("Bearer ", "", $dadosheader["Authorization"] ?? "");
+$token = str_replace("Bearer ", "", $dadosheader["Authorization"] ?? "");
 
-// $validacao = validarToken($token);
+$validacao = validarToken($token);
 
-// if (!$validacao["success"]) {
-//     echo json_encode(
-//         [
-//             "success" => false,
-//             "message" => $validacao["error"]
-//         ]
-//     );
-//     exit;
-// }
+if (!$validacao["success"]) {
+    echo json_encode(
+        [
+            "success" => false,
+            "message" => $validacao["error"]
+        ]
+    );
+    exit;
+}
 
-// $userId = $validacao["data"]["user_id"];
+$userId = $validacao["data"]["user_id"];
 
 ?>
