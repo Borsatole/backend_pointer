@@ -50,6 +50,28 @@ try {
         )
     ");
 
+    // Pega último registro (entrada ou saída)
+    $stmtUltima = $pdo->prepare("SELECT entrada, saida FROM $tabelabd WHERE id_condominio = :id_condominio ORDER BY id DESC LIMIT 1");
+    $stmtUltima->execute([':id_condominio' => $id_condominio]);
+    $ultimaVisita = $stmtUltima->fetch(PDO::FETCH_ASSOC);
+
+    if ($ultimaVisita) {
+        $ultimoHorario = $ultimaVisita['saida'] ?? $ultimaVisita['entrada'];
+        if ($ultimoHorario) {
+            $diff = strtotime($agora) - strtotime($ultimoHorario);
+            if ($diff < 2) {
+                // CORREÇÃO: Retorna uma resposta JSON válida em vez de exit() vazio
+                http_response_code(200);
+                echo json_encode([
+                    "success" => true, 
+                    "message" => "Registro muito próximo do anterior, ignorada",
+                    "ignored" => true
+                ]);
+                exit();
+            }
+        }
+    }
+
     // Busca visita aberta
     $stmt = $pdo->prepare("SELECT * FROM $tabelabd WHERE id_condominio = :id_condominio AND saida IS NULL ORDER BY id DESC LIMIT 1");
     $stmt->execute([':id_condominio' => $id_condominio]);

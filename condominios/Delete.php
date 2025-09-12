@@ -1,6 +1,6 @@
 <?php
 require_once dirname(__DIR__, 1) . '/vendor/autoload.php';
-require_once dirname(__DIR__, 1) . '/middlewares/Autenticacao-admin.php';
+require_once dirname(__DIR__, 1) . '/middlewares/Autenticacao.php';
 require_once dirname(__DIR__, 1) . '/middlewares/lentidao-teste-api.php';
 require_once dirname(__DIR__, 1) . '/conexao.php';
 

@@ -53,7 +53,7 @@ try {
     // -------------------------------
     // 2. Buscar tudo
     // -------------------------------
-    $sqlVisitas = "SELECT * FROM $tabelabd $where ORDER BY entrada ASC";
+    $sqlVisitas = "SELECT * FROM $tabelabd $where ORDER BY entrada DESC";
     $stmtVisitas = $pdo->prepare($sqlVisitas);
 
     foreach ($parametros as $campo => $dado) {
